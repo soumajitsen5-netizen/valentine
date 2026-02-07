@@ -1,120 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Valentine 😌</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+name: Deploy GitHub Pages
 
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: "Comic Sans MS", "Poppins", sans-serif;
-    }
+on:
+  push:
+    branches:
+      - main
 
-    body {
-      margin: 0;
-      height: 100vh;
-      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
-    .container {
-      text-align: center;
-      background: white;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      max-width: 90%;
-    }
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 30px;
-    }
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    .buttons {
-  position: relative;
-  height: 140px;
-}
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
-#yesBtn {
-  background: #ff4d6d;
-  color: white;
-  position: relative;
-  margin-right: 120px;
-}
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
 
-#noBtn {
-  background: #ccc;
-  position: absolute;
-  left: 60%;
-  top: 0;
-}
-
-    /* Result screen */
-    .result {
-      display: none;
-      text-align: center;
-    }
-
-    .heart {
-      font-size: 80px;
-      animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
-    }
-  </style>
-</head>
-
-<body>
-
-  <div class="container" id="questionBox">
-    <h1>Will you be my Valentine? 💌</h1>
-
-    <div class="buttons">
-      <button id="yesBtn">Yes 😌</button>
-      <button id="noBtn">No 😏</button>
-    </div>
-  </div>
-
-  <div class="container result" id="resultBox">
-    <div class="heart">❤️</div>
-    <h1>I knew it 😌</h1>
-    <p>You had no choice anyway.</p>
-  </div>
-
-  <script>
-    const noBtn = document.getElementById("noBtn");
-    const yesBtn = document.getElementById("yesBtn");
-    const questionBox = document.getElementById("questionBox");
-    const resultBox = document.getElementById("resultBox");
-
-    function moveNoButton() {
-      const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
-      const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
-
-      noBtn.style.left = x + "px";
-      noBtn.style.top = y + "px";
-    }
-
-    // Desktop hover
-    noBtn.addEventListener("mouseenter", moveNoButton);
-
-    // Mobile tap
-    noBtn.addEventListener("touchstart", moveNoButton);
-
-    yesBtn.addEventListener("click", () => {
-      questionBox.style.display = "none";
-      resultBox.style.display = "block";
-    });
-  </script>
-
-</body>
-</html>
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
